@@ -1,0 +1,30 @@
+{
+  "name": "dsa-backend",
+  "version": "1.0.0",
+  "description": "DSA Project Planner & CPM Scheduling REST API Backend",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch --watch-path=src src/server.js",
+    "test": "node test_dsa.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "keywords": [
+    "dsa",
+    "cpm",
+    "critical-path-method",
+    "topological-sort",
+    "cycle-detection",
+    "sqlite",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC"
+}

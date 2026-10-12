@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(ownerId) {
+      return isAuthenticated() && request.auth.uid == ownerId;
+    }
+
+    // User profile documents in /users/{userId}
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // Projects: Strictly isolated by ownerId == request.auth.uid
+    match /projects/{projectId} {
+      // Read allowed only if authenticated and project ownerId matches currentUser UID
+      allow read: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // Create allowed only if authenticated and new project document has ownerId == currentUser UID
+      allow create: if isAuthenticated() 
+                    && request.resource.data.ownerId == request.auth.uid;
+
+      // Update allowed only if existing ownerId is currentUser UID and ownership is not changed
+      allow update: if isAuthenticated() 
+                    && resource.data.ownerId == request.auth.uid
+                    && request.resource.data.ownerId == request.auth.uid;
+
+      // Delete allowed only if currentUser UID is the owner
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Tasks: Associated with projects and strictly isolated by ownerId == request.auth.uid
+    match /tasks/{taskId} {
+      allow read: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAuthenticated() 
+                    && resource.data.ownerId == request.auth.uid
+                    && request.resource.data.ownerId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Dependencies: Associated with projects and strictly isolated by ownerId == request.auth.uid
+    match /dependencies/{dependencyId} {
+      allow read: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAuthenticated() 
+                    && resource.data.ownerId == request.auth.uid
+                    && request.resource.data.ownerId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+  }
+}
